@@ -1,0 +1,225 @@
+/* Tip Goals Component */
+.tip-goals {
+  background: var(--color-card-bg, var(--color-bg));
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.tip-goals.complete {
+  border-color: var(--color-success);
+  background: linear-gradient(135deg, 
+    rgba(45, 80, 22, 0.05) 0%, 
+    rgba(45, 80, 22, 0.02) 100%
+  );
+}
+
+.goals-header {
+  margin-bottom: var(--spacing-md);
+}
+
+.goals-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.goals-title-row svg {
+  color: var(--color-accent);
+}
+
+.goals-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  flex: 1;
+}
+
+.btn-edit-goal {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-edit-goal:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.goals-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 4px 0 0 0;
+}
+
+.tip-goals.complete .goals-subtitle {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+/* Progress Bar */
+.goals-progress-container {
+  position: relative;
+  margin-bottom: var(--spacing-md);
+}
+
+.goals-progress-bar {
+  height: 12px;
+  background: var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.goals-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent) 0%, #a0896d 100%);
+  border-radius: 8px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.goals-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.tip-goals.complete .goals-progress-fill {
+  background: linear-gradient(90deg, var(--color-success) 0%, #4ade80 100%);
+}
+
+.goals-celebration {
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  color: var(--color-success);
+  animation: bounce 0.5s ease infinite alternate;
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+/* Stats */
+.goals-stats {
+  display: flex;
+  justify-content: space-between;
+}
+
+.goals-current,
+.goals-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.goals-current .stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.goals-target .stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Edit Form */
+.goals-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-row label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.edit-row input {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.edit-row input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.edit-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-cancel:hover {
+  background: var(--color-border);
+}
+
+.btn-save {
+  flex: 1;
+  padding: 10px;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-save:hover {
+  background: var(--color-accent-hover);
+}
