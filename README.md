@@ -1,238 +1,152 @@
-# Stellar Tip Jar ☕
+# Stellar Tip Jar 💫
 
-A handcrafted, minimal Stellar testnet donation page that allows users to connect their Freighter wallet and send XLM tips.
+A feature-rich, interactive Stellar tipping application designed for content creators. Built with React and Stellar SDK, seamlessly bridging the gap between creators and their supporters.
 
-## Features
+## ✨ Key Features
 
-- 🔐 **Freighter Wallet Integration** - Connect and disconnect seamlessly
-- 💰 **Real-time Balance** - View your XLM balance from Horizon testnet
-- ⚡ **Quick Tips** - Predefined 1 XLM and 5 XLM tip buttons
-- ✏️ **Custom Amounts** - Send any amount you choose
-- 📝 **Transaction Tracking** - View transaction hash and explorer link
-- 🎨 **Handcrafted Design** - Minimal, typography-driven layout (no dashboard templates!)
+### 💸 Core Tipping
 
-## Prerequisites
+- **Seamless Wallet Connection**: Supports Freighter wallet integration.
+- **Instant Tips**: Quick tip amounts (1, 5, 10 XLM) or custom values.
+- **Real-time Price**: Updates USD/XLM conversion rates automatically.
 
-Before you begin, make sure you have:
+### 🎮 Gamification & Engagement
 
-1. **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
-2. **Freighter Wallet** - [Install browser extension](https://www.freighter.app/)
-3. **Testnet XLM** - Fund your account at [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test)
+- **🔥 Tip Streaks**: Track daily support streaks with tiered badges (Bronze, Silver, Gold, Platinum).
+- **🏆 Milestones**: Unlock achievements for total tips sent (10, 25, 50, 100, 500+).
+- **📊 Leaderboard**: Visualize top supporters and contribution rankings.
+- **✨ Interactive Feedback**: Confetti explosions and custom sound effects on successful tips.
 
-## Installation
+### 📈 Analytics & Reporting
 
-1. **Navigate to the project directory:**
+- **In-Depth Dashboard**: Filter transaction history by 7 days, 30 days, or All Time.
+- **Export Options**: Download transaction history as **CSV** or styled **PDF reports**.
+- **Visual Charts**: Track tip volume trends over time using Chart.js.
+
+### 🛠 Tools for Creators
+
+- **📱 QR Code Generator**: Real, scannable QR codes (Powered by `qrcode.react`) with instant download and copy options.
+- **🔗 Embed Widget**: Generate an iframe widget to accept tips on personal websites/blogs.
+- **🧾 Shareable Receipts**: Generate receipt links or share directly to Twitter/X.
+
+### 🎨 UI/UX
+
+- **Dark Mode**: Fully supported dark/light themes with persistence.
+- **Responsive Design**: Mobile-friendly layout optimized for all devices.
+- **Standardized Icons**: Clean SVG icons for a polished, consistent look.
+
+---
+
+## 📸 UI Showcase
+
+| Feature                                               | Preview                                            |
+| :---------------------------------------------------- | :------------------------------------------------- |
+| **Home Dashboard**<br>Instant tipping & Wallet status | ![Home UI](public/screenshots/home.png)            |
+| **Analytics Pivot**<br>Charts & Leaderboards          | ![Analytics](public/screenshots/analytics.png)     |
+| **Interactive Elements**<br>QR Code & Confetti        | ![Interactive](public/screenshots/qr-confetti.png) |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v18+)
+- Stellar Freighter Wallet (Optional for Demo Mode)
+
+### Installation
+
+1. **Clone the repository** (or download source)
+
    ```bash
    cd stellar-tip-jar
    ```
 
-2. **Install dependencies:**
+2. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
-3. **Update Creator Address** (Important!)
-   
-   Open `src/App.jsx` and replace the placeholder address:
-   ```javascript
-   const CREATOR_ADDRESS = 'YOUR_TESTNET_ADDRESS_HERE';
-   const CREATOR_NAME = 'Your Name';
-   ```
+3. **Run Development Server**
 
-## Running Locally
-
-1. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-2. **Open your browser:**
-   Navigate to `http://localhost:5173`
-
-3. **Connect Freighter:**
-   - Make sure Freighter is set to **Testnet** mode
-   - Click "Connect Freighter Wallet"
-   - Approve the connection
-
-4. **Fund Your Testnet Account:**
-   If you see "0 XLM", visit the [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test) to get free testnet XLM.
-
-## Building for Production
-
-1. **Build the project:**
-   ```bash
-   npm run build
-   ```
-
-2. **Preview the production build:**
-   ```bash
-   npm run preview
-   ```
-
-The build output will be in the `dist/` directory.
-
-## Deployment
-
-### Deploy to Vercel
-
-1. Install Vercel CLI:
-   ```bash
-   npm i -g vercel
-   ```
-
-2. Deploy:
-   ```bash
-   vercel
-   ```
-
-### Deploy to Netlify
-
-1. Install Netlify CLI:
-   ```bash
-   npm i -g netlify-cli
-   ```
-
-2. Deploy:
-   ```bash
-   netlify deploy --prod
-   ```
-
-Or simply drag and drop the `dist/` folder to [Netlify Drop](https://app.netlify.com/drop).
-
-### Deploy to GitHub Pages
-
-1. Install gh-pages:
-   ```bash
-   npm install --save-dev gh-pages
-   ```
-
-2. Add to `package.json`:
-   ```json
-   "scripts": {
-     "predeploy": "npm run build",
-     "deploy": "gh-pages -d dist"
-   }
-   ```
-
-3. Update `vite.config.js`:
-   ```javascript
-   export default defineConfig({
-     plugins: [react()],
-     base: '/stellar-tip-jar/', // Your repo name
-   })
-   ```
-
-4. Deploy:
-   ```bash
-   npm run deploy
-   ```
-
-## Project Structure
-
-```
-stellar-tip-jar/
-├── public/
-│   └── stellar-icon.svg       # Favicon
-├── src/
-│   ├── utils/
-│   │   ├── wallet.js          # Freighter wallet integration
-│   │   └── stellar.js         # Stellar SDK & transactions
-│   ├── App.jsx                # Main component
-│   ├── App.css                # Handcrafted minimal styles
-│   └── main.jsx               # React entry point
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
-```
-
-## How It Works
-
-### Wallet Connection
-- Uses Freighter browser extension API
-- Requests public key from user's wallet
-- Fetches account balance from Horizon testnet
-
-### Sending Tips
-1. User selects predefined amount or enters custom amount
-2. App builds a Stellar payment transaction
-3. Transaction is signed by Freighter wallet
-4. Signed transaction is submitted to Horizon testnet
-5. Transaction hash is displayed with explorer link
-
-### Stellar Network
-- **Network:** Testnet
-- **Horizon URL:** `https://horizon-testnet.stellar.org`
-- **Explorer:** `https://stellar.expert/explorer/testnet`
-
-## Troubleshooting
-
-### "Freighter wallet is not installed"
-- Install the Freighter browser extension
-- Refresh the page after installation
-
-### "Your account needs to be funded"
-- Visit [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test)
-- Enter your public key and click "Get test network lumens"
-
-### "Failed to connect wallet"
-- Make sure Freighter is set to **Testnet** mode
-- Check that you approved the connection request
-
-### Transaction Failed
-- Ensure you have enough XLM balance (account minimum is 1 XLM)
-- Verify the creator address is correct
-- Check that both accounts are funded on testnet
-
-## Stellar White Belt Requirements
-
-This project satisfies the **Stellar White Belt Level 1** requirements:
-
-- ✅ Connect Freighter wallet
-- ✅ Display wallet public key
-- ✅ Fetch and display XLM balance
-- ✅ Build payment transactions
-- ✅ Sign transactions with Freighter
-- ✅ Submit transactions to Horizon
-- ✅ Display transaction results
-- ✅ Handle errors gracefully
-
-## Technologies Used
-
-- **React 18** - UI library
-- **Vite** - Build tool
-- **Stellar SDK** - Blockchain interactions
-- **Freighter API** - Wallet connection
-- **Vanilla CSS** - Handcrafted styles (no frameworks!)
-
-## Design Philosophy
-
-This project intentionally avoids:
-- ❌ Dashboard templates
-- ❌ Card/tile layouts
-- ❌ Grid systems
-- ❌ Dark gradients
-- ❌ Neon effects
-- ❌ Generic AI aesthetics
-
-Instead, it embraces:
-- ✅ Single-column layout
-- ✅ Typography-first design
-- ✅ Natural spacing
-- ✅ Minimal color palette
-- ✅ Handcrafted feel
-
-## License
-
-MIT
-
-## Support
-
-Having issues? Check:
-- [Stellar Documentation](https://developers.stellar.org/)
-- [Freighter Documentation](https://docs.freighter.app/)
-- [Stellar Stack Exchange](https://stellar.stackexchange.com/)
+4. **Open Browser**
+   Visit `http://localhost:5173`
 
 ---
 
-Built with ❤️ for the Stellar ecosystem
+## 🔧 Configuration Modes
+
+The app supports two modes via `src/utils/wallet.js`:
+
+### 1. ⚠️ Demo Mode (Default)
+
+Ideal for testing UI features without a real wallet or funds.
+
+- **Wallet**: Simulates connection (Mock Account).
+- **Transactions**: Simulates success with fake hashes (no blockchain interaction).
+- **Network Badge**: Displays "⚠️ DEMO" in the header.
+- **Enabled by**: Setting `DEV_MODE = true` in `src/utils/wallet.js`.
+
+### 2. 🟢 Real Testnet Mode
+
+For actual transactions on the Stellar Testnet.
+
+- **Wallet**: Connects to your real Freighter Wallet extension.
+- **Transactions**: Submits real XDR to Stellar Testnet Horizon.
+- **Network Badge**: Displays "🟢 TESTNET" in the header.
+- **Setup**:
+  1. Set `DEV_MODE = false` in `src/utils/wallet.js`.
+  2. Ensure your Freighter wallet is installed and set to **Testnet**.
+  3. Ensure your Creator Address in `App.jsx` is active/funded on Testnet.
+
+---
+
+## � Project Architecture
+
+```
+stellar-tip-jar/
+├── public/              # Static assets (Favicons, Screenshots)
+├── src/
+│   ├── components/      # Reusable UI components
+│   │   ├── Analytics.jsx    # Charts & Data visualization
+│   │   ├── QRCode.jsx       # Real QR generation
+│   │   ├── StreakBadge.jsx  # Gamification logic
+│   │   ├── Icons.jsx        # SVG Icon system
+│   │   └── ...
+│   ├── utils/          # Helper functions
+│   │   ├── wallet.js    # Freighter integration & Mode logic
+│   │   ├── stellar.js   # Stellar SDK interactions
+│   │   └── storage.js   # LocalStorage persistence
+│   ├── App.jsx         # Main application controller
+│   ├── App.css         # Global design system & variables
+│   └── main.jsx        # Entry point
+└── README.md           # Documentation
+```
+
+## �📦 Tech Stack
+
+- **Frontend**: React, Vite
+- **Blockchain**: Stellar SDK
+- **Styling**: Vanilla CSS (Handcrafted variables & themes)
+- **Utilities**:
+  - `chart.js` (Analytics)
+  - `jspdf` (PDF Reporting)
+  - `qrcode.react` (QR Generation)
+  - `canvas-confetti` (Visual Effects)
+
+## 🤝 Contributing
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+Distributed under the MIT License. Built with ❤️ for the Stellar ecosystem.
