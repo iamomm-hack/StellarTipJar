@@ -1,0 +1,396 @@
+/* 
+ * Stellar Tip Jar
+ * Handcrafted minimal design with refined typography
+ */
+
+:root {
+  --color-bg: #fafaf8;
+  --color-text: #1a1a1a;
+  --color-text-muted: #666666;
+  --color-accent: #8b7355;
+  --color-accent-hover: #6d5a44;
+  --color-border: #e0e0e0;
+  --color-success: #2d5016;
+  --color-error: #8b2e2e;
+  
+  --font-serif: 'Crimson Pro', Georgia, serif;
+  --font-sans: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --spacing-xl: 4rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container - Single column, left-aligned */
+.container {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-md);
+  padding-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+}
+
+/* Typography */
+.title {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.7;
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
+}
+
+/* Sections - Separated by spacing only */
+.section {
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Creator Section */
+.creator-name {
+  font-size: 1.125rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.label {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+}
+
+.address-container {
+  margin-bottom: var(--spacing-md);
+}
+
+.address-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.address {
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+}
+
+.copy-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  padding: 0.4rem 0.875rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+}
+
+.copy-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* QR Code */
+.qr-wrapper {
+  margin-top: var(--spacing-md);
+}
+
+.qr-placeholder {
+  width: 200px;
+  height: 200px;
+}
+
+.qr-svg {
+  width: 100%;
+  height: 100%;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+/* Wallet Info */
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+
+.info-row .label {
+  margin-bottom: 0;
+}
+
+.value {
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.value.balance {
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+/* Buttons */
+.btn {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+  line-height: 1.4;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-text);
+  color: var(--color-text);
+}
+
+/* Tip Buttons */
+.tip-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.btn-tip {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border: 2px solid var(--color-accent);
+  padding: 0.625rem 1.25rem;
+  font-weight: 400;
+}
+
+.btn-tip:hover:not(:disabled) {
+  background-color: var(--color-accent);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Custom Tip Input */
+.custom-tip {
+  margin-top: var(--spacing-md);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.tip-input {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: white;
+  color: var(--color-text);
+  transition: border-color 0.2s ease;
+}
+
+.tip-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.tip-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.btn-send {
+  background-color: var(--color-accent);
+  color: white;
+  white-space: nowrap;
+}
+
+.btn-send:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+/* Feedback Section */
+.feedback-section {
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.message {
+  padding: var(--spacing-md);
+  border-radius: 6px;
+  margin-bottom: var(--spacing-md);
+}
+
+.success-message {
+  background-color: rgba(45, 80, 22, 0.08);
+  color: var(--color-success);
+  border-left: 3px solid var(--color-success);
+}
+
+.error-message {
+  background-color: rgba(139, 46, 46, 0.08);
+  color: var(--color-error);
+  border-left: 3px solid var(--color-error);
+}
+
+.tx-info {
+  margin-top: var(--spacing-md);
+}
+
+.tx-info .label {
+  margin-bottom: var(--spacing-xs);
+}
+
+.tx-hash {
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: var(--spacing-sm);
+}
+
+.explorer-link {
+  display: inline-block;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.explorer-link:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+/* Footer */
+.footer {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  text-align: left;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* Loading State */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .title {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .input-group {
+    flex-direction: column;
+  }
+  
+  .tip-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-tip {
+    width: 100%;
+  }
+}
