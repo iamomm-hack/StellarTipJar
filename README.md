@@ -91,26 +91,16 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 
 The app supports two modes via `src/utils/wallet.js`:
 
-### 1. ⚠️ Demo Mode (Default)
+### 2.Testnet Mode
 
-Ideal for testing UI features without a real wallet or funds.
-
-- **Wallet**: Simulates connection (Mock Account).
-- **Transactions**: Simulates success with fake hashes (no blockchain interaction).
-- **Network Badge**: Displays "⚠️ DEMO" in the header.
-- **Enabled by**: Setting `DEV_MODE = true` in `src/utils/wallet.js`.
-
-### 2. 🟢 Real Testnet Mode
-
-For actual transactions on the Stellar Testnet.
+For transactions on the Stellar Testnet.
 
 - **Wallet**: Connects to your real Freighter Wallet extension.
 - **Transactions**: Submits real XDR to Stellar Testnet Horizon.
 - **Network Badge**: Displays "🟢 TESTNET" in the header.
-- **Setup**:
-  1. Set `DEV_MODE = false` in `src/utils/wallet.js`.
-  2. Ensure your Freighter wallet is installed and set to **Testnet**.
-  3. Ensure your Creator Address in `App.jsx` is active/funded on Testnet.
+- **Setup**:.
+  1. Ensure your Freighter wallet is installed and set to **Testnet**.
+  2. Ensure your Creator Address in `App.jsx` is active/funded on Testnet.
 
 ---
 
