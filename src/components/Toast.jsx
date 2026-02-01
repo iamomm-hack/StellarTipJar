@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { SuccessIcon, ErrorIcon, InfoIcon } from './Icons';
 import '../styles/Toast.css';
 
 /**
@@ -21,13 +22,13 @@ function Toast({ message, type = 'info', onClose }) {
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return '✓';
+        return <SuccessIcon size={18} />;
       case 'error':
-        return '✕';
+        return <ErrorIcon size={18} />;
       case 'info':
-        return 'ℹ';
+        return <InfoIcon size={18} />;
       default:
-        return '';
+        return <InfoIcon size={18} />;
     }
   };
 
