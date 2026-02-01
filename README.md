@@ -91,7 +91,7 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 
 The app supports two modes via `src/utils/wallet.js`:
 
-### 2.Testnet Mode
+### Testnet Mode
 
 For transactions on the Stellar Testnet.
 
