@@ -43,8 +43,8 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 | :---------------------------------------------------- | :------------------------------------------------- |
 | **Home Dashboard**<br>Instant tipping & Wallet status | ![Home UI](<img width="1919" height="878" alt="image" src="https://github.com/user-attachments/assets/11a05b31-1141-4fd3-92f4-d2b7d4c3e51b" />
 )            |
-| **Analytics Pivot**<br>Charts & Leaderboards          | ![Analytics](<img width="1919" height="911" alt="image" src="https://github.com/user-attachments/assets/2b61f158-21de-4189-b9dd-02abb84feab4" 
-                                                                          <img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/f7176405-fb94-47d0-a7da-5f33a24dfb1e" />
+| **Analytics Pivot**<br>Charts & Leaderboards          | ![Analytics](<img width="1919" height="911" alt="image" src="https://github.com/user-attachments/assets/cb63d2e7-4f47-462f-9de0-ca08a6252eeb" />
+ />
 />
 )     |
 | **Interactive Elements**<br>QR Code & Confetti        | ![Interactive](<img width="556" height="768" alt="image" src="https://github.com/user-attachments/assets/5f54a6d4-b48d-4e96-bfa4-8e89ff6ac8ef" />
