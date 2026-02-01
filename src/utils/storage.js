@@ -68,3 +68,52 @@ export const getTransactionById = (id) => {
   const transactions = getTransactions();
   return transactions.find((tx) => tx.id === id) || null;
 };
+
+const CREATOR_PROFILE_KEY = "stellar_tip_jar_creator_profile";
+
+export const saveCreatorProfile = (profileData) => {
+  try {
+    localStorage.setItem(CREATOR_PROFILE_KEY, JSON.stringify(profileData));
+    return true;
+  } catch (error) {
+    console.error("Error saving creator profile:", error);
+    return false;
+  }
+};
+
+export const getCreatorProfile = () => {
+  try {
+    const stored = localStorage.getItem(CREATOR_PROFILE_KEY);
+    return stored
+      ? JSON.parse(stored)
+      : {
+          name: "",
+          bio: "",
+          avatar: "",
+          social: {
+            twitter: "",
+            github: "",
+            website: "",
+          },
+        };
+  } catch (error) {
+    console.error("Error reading creator profile:", error);
+    return {
+      name: "",
+      bio: "",
+      avatar: "",
+      social: {
+        twitter: "",
+        github: "",
+        website: "",
+      },
+    };
+  }
+};
+
+export const getTotalTipsReceived = () => {
+  const transactions = getTransactions();
+  return transactions
+    .filter((tx) => tx.status === "success")
+    .reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
+};
