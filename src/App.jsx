@@ -9,22 +9,37 @@ import {
   getExplorerLink,
   NETWORK_PASSPHRASE 
 } from './utils/stellar';
+import { saveTransaction, getTransactions, clearTransactions } from './utils/storage';
+import Toast from './components/Toast';
+import TransactionHistory from './components/TransactionHistory';
+import Receipt from './components/Receipt';
 import './App.css';
 
 // Fixed creator address (replace with your testnet address)
-const CREATOR_ADDRESS = 'GABC3DEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDEFGHIJKLMNOPQRSTU';
-const CREATOR_NAME = 'Alex Chen';
+const CREATOR_ADDRESS = 'GBMQJ3G5LDWODZKUUQWGGT6NIKMM7KL5NLHVIG53WLNLWB27Z4AKH3F4';
+const CREATOR_NAME = 'OM KUMAR';
 
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [publicKey, setPublicKey] = useState('');
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [customAmount, setCustomAmount] = useState('');
-  const [txHash, setTxHash] = useState('');
   const [copied, setCopied] = useState(false);
+  
+  // Transaction history state
+  const [transactions, setTransactions] = useState([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+
+  // Load transactions from localStorage on mount
+  useEffect(() => {
+    const stored = getTransactions();
+    setTransactions(stored);
+  }, []);
 
   // Fetch balance when wallet connects
   useEffect(() => {
@@ -42,16 +57,24 @@ function App() {
     }
   };
 
+  const showToast = (message, type = 'info') => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: '', type: 'info' });
+  };
+
   const handleConnect = async () => {
-    setError('');
     setLoading(true);
     
     try {
       const pubKey = await connectWallet();
       setPublicKey(pubKey);
       setWalletConnected(true);
+      showToast('Wallet connected successfully!', 'success');
     } catch (err) {
-      setError(err.message);
+      showToast(err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -62,20 +85,15 @@ function App() {
     setWalletConnected(false);
     setPublicKey('');
     setBalance(0);
-    setError('');
-    setSuccess('');
-    setTxHash('');
+    showToast('Wallet disconnected', 'info');
   };
 
   const sendTip = async (amount) => {
     if (!walletConnected) {
-      setError('Please connect your wallet first');
+      showToast('Please connect your wallet first', 'error');
       return;
     }
 
-    setError('');
-    setSuccess('');
-    setTxHash('');
     setLoading(true);
 
     try {
@@ -88,14 +106,27 @@ function App() {
       // Submit transaction
       const hash = await submitTransaction(signedXdr);
       
-      setTxHash(hash);
-      setSuccess(`Thank you! Your ${amount} XLM tip was sent successfully.`);
+      // Save transaction to history
+      const txData = {
+        hash,
+        amount,
+        recipient: CREATOR_ADDRESS,
+        sender: publicKey,
+        status: 'success'
+      };
+      
+      const savedTx = saveTransaction(txData);
+      if (savedTx) {
+        setTransactions(prev => [savedTx, ...prev]);
+      }
+      
+      showToast(`Thank you! Your ${amount} XLM tip was sent successfully.`, 'success');
       setCustomAmount('');
       
       // Refresh balance
       setTimeout(fetchBalance, 2000);
     } catch (err) {
-      setError(err.message);
+      showToast(err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -108,10 +139,28 @@ function App() {
   const handleCustomTip = () => {
     const amount = parseFloat(customAmount);
     if (isNaN(amount) || amount <= 0) {
-      setError('Please enter a valid amount');
+      showToast('Please enter a valid amount', 'error');
       return;
     }
     sendTip(amount);
+  };
+
+  const handleViewReceipt = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowReceipt(true);
+  };
+
+  const handleCloseReceipt = () => {
+    setShowReceipt(false);
+    setSelectedTransaction(null);
+  };
+
+  const handleClearHistory = () => {
+    const success = clearTransactions();
+    if (success) {
+      setTransactions([]);
+      showToast('Transaction history cleared', 'info');
+    }
   };
 
   const handleCopyAddress = async () => {
@@ -244,42 +293,36 @@ function App() {
         </section>
       )}
 
-      {/* Feedback Section */}
-      {(success || error || txHash) && (
-        <section className="section feedback-section">
-          {success && (
-            <div className="message success-message">
-              <p>{success}</p>
-            </div>
-          )}
-          
-          {txHash && (
-            <div className="tx-info">
-              <p className="label">Transaction Hash:</p>
-              <code className="tx-hash">{shortenAddress(txHash)}</code>
-              <a 
-                href={getExplorerLink(txHash)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="explorer-link"
-              >
-                View on Stellar Expert →
-              </a>
-            </div>
-          )}
-          
-          {error && (
-            <div className="message error-message">
-              <p>{error}</p>
-            </div>
-          )}
-        </section>
+      {/* Transaction History */}
+      {walletConnected && (
+        <TransactionHistory
+          transactions={transactions}
+          onViewReceipt={handleViewReceipt}
+          onClearHistory={handleClearHistory}
+        />
       )}
 
       {/* Footer */}
       <footer className="footer">
         <p>Built on Stellar Testnet</p>
       </footer>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
+
+      {/* Receipt Modal */}
+      {showReceipt && selectedTransaction && (
+        <Receipt
+          transaction={selectedTransaction}
+          onClose={handleCloseReceipt}
+        />
+      )}
     </div>
   );
 }
