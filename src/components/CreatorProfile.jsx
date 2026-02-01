@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
 
 function CreatorProfile({ creatorData, stellarAddress, totalTips, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(creatorData);
-  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     setFormData(creatorData);
@@ -153,31 +151,9 @@ function CreatorProfile({ creatorData, stellarAddress, totalTips, onUpdate }) {
         </div>
 
         <div className="profile-details">
-          <div className="qr-section">
-            <label className="label">Stellar Address QR Code</label>
-            <div className="qr-code-wrapper">
-              <div className={!showQR ? 'qr-blurred' : ''}>
-                <QRCodeSVG 
-                  value={stellarAddress}
-                  size={180}
-                  level="H"
-                  includeMargin={true}
-                />
-              </div>
-              {!showQR && (
-                <div className="qr-overlay">
-                  <button 
-                    className="btn-reveal-qr"
-                    onClick={() => setShowQR(true)}
-                  >
-                    Show QR Code
-                  </button>
-                </div>
-              )}
-            </div>
-            {showQR && (
-              <p className="qr-hint">Scan to send tips</p>
-            )}
+          <div className="detail-item">
+            <label className="label">Total Tips Received</label>
+            <p className="detail-value">{totalTips.toFixed(2)} XLM</p>
           </div>
 
           {(creatorData.social.twitter || creatorData.social.github || creatorData.social.website) && (
