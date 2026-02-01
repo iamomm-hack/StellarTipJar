@@ -1,0 +1,239 @@
+.analytics-section {
+  background: white;
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: var(--spacing-xl);
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.analytics-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.analytics-title svg {
+  flex-shrink: 0;
+}
+
+.analytics-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.period-selector {
+  display: flex;
+  gap: var(--spacing-xs);
+  background: #f5f5f5;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.btn-pdf-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-sans);
+}
+
+.btn-pdf-export:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.period-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+}
+
+.period-btn:hover {
+  background: rgba(244, 208, 63, 0.1);
+  color: var(--color-text);
+}
+
+.period-btn.active {
+  background: var(--color-accent);
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.chart-container {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chart-small {
+  grid-column: span 1;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.chart-title svg {
+  flex-shrink: 0;
+}
+
+.chart-wrapper {
+  height: 300px;
+  position: relative;
+}
+
+.analytics-empty {
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.empty-subtext {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-small {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-section {
+    padding: var(--spacing-md);
+  }
+  
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .period-selector {
+    width: 100%;
+  }
+  
+  .period-btn {
+    flex: 1;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-wrapper {
+    height: 250px;
+  }
+}
+
+/* Dark Mode - Analytics */
+body.dark-mode .analytics-section {
+  background: #161616;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .analytics-title {
+  color: #e0e0e0;
+}
+
+body.dark-mode .period-selector {
+  background: #222;
+}
+
+body.dark-mode .period-btn {
+  color: #999;
+}
+
+body.dark-mode .period-btn:hover {
+  background: rgba(212, 167, 106, 0.15);
+  color: #e0e0e0;
+}
+
+body.dark-mode .period-btn.active {
+  background: #d4a76a;
+  color: #0d0d0d;
+}
+
+body.dark-mode .chart-container {
+  background: #1a1a1a;
+  border-color: #2d2d2d;
+}
+
+body.dark-mode .chart-title {
+  color: #e0e0e0;
+}
+
+body.dark-mode .empty-text {
+  color: #e0e0e0;
+}
+
+body.dark-mode .empty-subtext {
+  color: #999;
+}
