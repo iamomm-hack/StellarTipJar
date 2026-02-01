@@ -42,7 +42,7 @@ export async function buildPaymentTransaction(
         }),
       )
       .setTimeout(180)
-      .addMemo(StellarSdk.Memo.text("Stellar Tip Jar ☕"))
+      .addMemo(StellarSdk.Memo.text("Stellar Tip Jar"))
       .build();
 
     return transaction.toXDR();
