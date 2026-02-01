@@ -49,7 +49,8 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 )
 
       |
-| **Interactive Elements**<br>QR Code & Confetti        | ![Interactive](<img width="556" height="768" alt="image" src="https://github.com/user-attachments/assets/5f54a6d4-b48d-4e96-bfa4-8e89ff6ac8ef" />
+| **Interactive Elements**<br>QR Code & Confetti        | ![Interactive](<img width="556" height="768" alt="image" src="https://github.com/user-attachments/assets/8fc0388f-dedf-4cc9-a9f4-d908007d93af" />
+
 ) |
 
 ---
