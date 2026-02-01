@@ -9,11 +9,20 @@ import {
   getExplorerLink,
   NETWORK_PASSPHRASE 
 } from './utils/stellar';
-import { saveTransaction, getTransactions, clearTransactions } from './utils/storage';
+import { 
+  saveTransaction, 
+  getTransactions, 
+  clearTransactions,
+  saveCreatorProfile,
+  getCreatorProfile,
+  getTotalTipsReceived
+} from './utils/storage';
 import Toast from './components/Toast';
 import TransactionHistory from './components/TransactionHistory';
 import Receipt from './components/Receipt';
+import CreatorProfile from './components/CreatorProfile';
 import './App.css';
+import './styles/CreatorProfile.css';
 
 // Fixed creator address (replace with your testnet address)
 const CREATOR_ADDRESS = 'GBMQJ3G5LDWODZKUUQWGGT6NIKMM7KL5NLHVIG53WLNLWB27Z4AKH3F4';
@@ -34,12 +43,37 @@ function App() {
   
   // Toast state
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  
+  // Creator profile state
+  const [creatorProfile, setCreatorProfile] = useState({
+    name: '',
+    bio: '',
+    avatar: '',
+    social: {
+      twitter: '',
+      github: '',
+      website: ''
+    }
+  });
+  const [totalTips, setTotalTips] = useState(0);
 
-  // Load transactions from localStorage on mount
+  // Load data from localStorage on mount
   useEffect(() => {
     const stored = getTransactions();
     setTransactions(stored);
+    
+    const profile = getCreatorProfile();
+    setCreatorProfile(profile);
+    
+    const tips = getTotalTipsReceived();
+    setTotalTips(tips);
   }, []);
+  
+  // Update total tips when transactions change
+  useEffect(() => {
+    const tips = getTotalTipsReceived();
+    setTotalTips(tips);
+  }, [transactions]);
 
   // Fetch balance when wallet connects
   useEffect(() => {
@@ -163,6 +197,16 @@ function App() {
     }
   };
 
+  const handleUpdateProfile = (profileData) => {
+    const success = saveCreatorProfile(profileData);
+    if (success) {
+      setCreatorProfile(profileData);
+      showToast('Profile updated successfully', 'success');
+    } else {
+      showToast('Failed to update profile', 'error');
+    }
+  };
+
   const handleCopyAddress = async () => {
     const success = await copyToClipboard(CREATOR_ADDRESS);
     if (success) {
@@ -173,12 +217,41 @@ function App() {
 
   return (
     <div className="container">
-      {/* Header */}
+      {/* Header with Wallet Button */}
       <header className="header">
-        <h1 className="title">Stellar Tip Jar</h1>
-        <p className="subtitle">
-          Support my work by sending a small XLM tip on Stellar testnet.
-        </p>
+        <div className="header-content">
+          <div className="header-text">
+            <h1 className="title">Stellar Tip Jar</h1>
+            <p className="subtitle">
+              Support my work by sending a small XLM tip on Stellar testnet.
+            </p>
+          </div>
+          
+          <div className="wallet-button-container">
+            {!walletConnected ? (
+              <button 
+                className="btn btn-wallet"
+                onClick={handleConnect}
+                disabled={loading}
+              >
+                {loading ? 'Connecting...' : 'Connect Wallet'}
+              </button>
+            ) : (
+              <div className="wallet-connected">
+                <div className="wallet-badge">
+                  <span className="wallet-address">{shortenAddress(publicKey)}</span>
+                  <span className="wallet-balance">{balance.toFixed(2)} XLM</span>
+                </div>
+                <button 
+                  className="btn btn-disconnect"
+                  onClick={handleDisconnect}
+                >
+                  Disconnect
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Creator Section */}
@@ -198,54 +271,16 @@ function App() {
             </button>
           </div>
         </div>
-
-        {/* QR Code Placeholder */}
-        <div className="qr-wrapper">
-          <div className="qr-placeholder">
-            <svg viewBox="0 0 200 200" className="qr-svg">
-              <rect x="10" y="10" width="180" height="180" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <text x="100" y="100" textAnchor="middle" dominantBaseline="middle" fontSize="14" fill="currentColor">
-                QR Code
-              </text>
-              <text x="100" y="120" textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="currentColor" opacity="0.6">
-                (Testnet Address)
-              </text>
-            </svg>
-          </div>
-        </div>
       </section>
 
-      {/* Wallet Section */}
-      <section className="section">
-        <h2 className="section-title">Your Wallet</h2>
-        
-        {!walletConnected ? (
-          <button 
-            className="btn btn-primary"
-            onClick={handleConnect}
-            disabled={loading}
-          >
-            {loading ? 'Connecting...' : 'Connect Freighter Wallet'}
-          </button>
-        ) : (
-          <div className="wallet-info">
-            <div className="info-row">
-              <span className="label">Connected:</span>
-              <code className="value">{shortenAddress(publicKey)}</code>
-            </div>
-            <div className="info-row">
-              <span className="label">Your Balance:</span>
-              <span className="value balance">{balance.toFixed(2)} XLM</span>
-            </div>
-            <button 
-              className="btn btn-secondary"
-              onClick={handleDisconnect}
-            >
-              Disconnect
-            </button>
-          </div>
-        )}
-      </section>
+      {/* Creator Profile */}
+      <CreatorProfile 
+        creatorData={creatorProfile}
+        stellarAddress={CREATOR_ADDRESS}
+        totalTips={totalTips}
+        onUpdate={handleUpdateProfile}
+      />
+
 
       {/* Tip Section */}
       {walletConnected && (
