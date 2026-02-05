@@ -41,9 +41,17 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 
 | Feature                                               | Preview                                            |
 | :---------------------------------------------------- | :------------------------------------------------- |
-| **Home Dashboard**<br>Instant tipping & Wallet status | ![Home UI](public/screenshots/home.png)            |
-| **Analytics Pivot**<br>Charts & Leaderboards          | ![Analytics](public/screenshots/analytics.png)     |
-| **Interactive Elements**<br>QR Code & Confetti        | ![Interactive](public/screenshots/qr-confetti.png) |
+| **Home Dashboard**<br>Instant tipping & Wallet status | ![Home UI](<img width="1919" height="878" alt="image" src="https://github.com/user-attachments/assets/11a05b31-1141-4fd3-92f4-d2b7d4c3e51b" />
+)            |
+| **Analytics Pivot**<br>Charts & Leaderboards          | ![Analytics](<img width="1919" height="911" alt="image" src="https://github.com/user-attachments/assets/cb63d2e7-4f47-462f-9de0-ca08a6252eeb" />
+      |
+      | ![Chart]<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/9a6b7eef-5db7-4d76-bd73-9c24db8803d6" />
+
+
+      |
+| **Interactive Elements**<br>QR Code & Confetti        | ![Interactive](<img width="556" height="768" alt="image" src="https://github.com/user-attachments/assets/8fc0388f-dedf-4cc9-a9f4-d908007d93af" />
+
+) |
 
 ---
 
@@ -83,26 +91,16 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 
 The app supports two modes via `src/utils/wallet.js`:
 
-### 1. ⚠️ Demo Mode (Default)
+### Testnet Mode
 
-Ideal for testing UI features without a real wallet or funds.
-
-- **Wallet**: Simulates connection (Mock Account).
-- **Transactions**: Simulates success with fake hashes (no blockchain interaction).
-- **Network Badge**: Displays "⚠️ DEMO" in the header.
-- **Enabled by**: Setting `DEV_MODE = true` in `src/utils/wallet.js`.
-
-### 2. 🟢 Real Testnet Mode
-
-For actual transactions on the Stellar Testnet.
+For transactions on the Stellar Testnet.
 
 - **Wallet**: Connects to your real Freighter Wallet extension.
 - **Transactions**: Submits real XDR to Stellar Testnet Horizon.
 - **Network Badge**: Displays "🟢 TESTNET" in the header.
-- **Setup**:
-  1. Set `DEV_MODE = false` in `src/utils/wallet.js`.
-  2. Ensure your Freighter wallet is installed and set to **Testnet**.
-  3. Ensure your Creator Address in `App.jsx` is active/funded on Testnet.
+- **Setup**:.
+  1. Ensure your Freighter wallet is installed and set to **Testnet**.
+  2. Ensure your Creator Address in `App.jsx` is active/funded on Testnet.
 
 ---
 
