@@ -5,6 +5,24 @@ export const NETWORK_PASSPHRASE = StellarSdk.Networks.TESTNET;
 
 const server = new StellarSdk.Horizon.Server(HORIZON_URL);
 
+// Friendbot URL for funding testnet accounts
+const FRIENDBOT_URL = "https://friendbot.stellar.org";
+
+export async function fundAccount(publicKey) {
+  try {
+    const response = await fetch(`${FRIENDBOT_URL}?addr=${publicKey}`);
+    const data = await response.json();
+
+    if (response.ok) {
+      return data;
+    } else {
+      throw new Error("Failed to fund account: " + JSON.stringify(data));
+    }
+  } catch (error) {
+    throw new Error("Friendbot error: " + error.message);
+  }
+}
+
 export async function getBalance(publicKey) {
   try {
     const account = await server.loadAccount(publicKey);
@@ -16,7 +34,7 @@ export async function getBalance(publicKey) {
     return xlmBalance ? parseFloat(xlmBalance.balance) : 0;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      return 0;
+      return 0; // Account not created yet
     }
     throw new Error("Failed to fetch balance: " + error.message);
   }

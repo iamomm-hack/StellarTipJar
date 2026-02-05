@@ -1,99 +1,94 @@
-import * as StellarSdk from "stellar-sdk";
+import albedo from "@albedo-link/intent";
 
-// Reverting to DEV_MODE as requested to avoid dependency issues
-const DEV_MODE = true;
-// Using the previous test key
+/**
+ * Albedo Wallet Integration
+ * Web-based wallet - works perfectly on localhost!
+ */
+
+const DEV_MODE = false;
 const DEV_PUBLIC_KEY =
   "GBMQJ3G5LDWODZKUUQWGGT6NIKMM7KL5NLHVIG53WLNLWB27Z4AKH3F4";
 
 if (typeof window !== "undefined") {
   window.DEV_MODE_ACTIVE = DEV_MODE;
+  window.WALLET_TYPE = "albedo";
 }
 
-export async function isFreighterInstalled() {
-  // Always return true in Dev Mode to simulate wallet presence
-  if (DEV_MODE) return true;
-
-  // Fallback to manual window checks if Dev Mode is disabled in future
-  if (typeof window === "undefined") return false;
-  if (window.freighterApi) return true;
-  if (window.freighter) return true;
-
-  // Retry logic for detection (manual)
-  for (let i = 0; i < 10; i++) {
-    if (window.freighterApi || window.freighter) return true;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  return false;
-}
-
+/**
+ * Connect to Albedo wallet
+ * Opens web popup for user approval
+ */
 export async function connectWallet() {
   if (DEV_MODE) {
     console.warn("🔧 DEV MODE: Using mock wallet connection");
-    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 300));
     return DEV_PUBLIC_KEY;
   }
 
-  // Manual Freighter connection logic (Fallback)
-  const installed = await isFreighterInstalled();
-
-  if (!installed) {
-    throw new Error(
-      "Freighter wallet not detected! Please install it from freighter.app",
-    );
-  }
-
   try {
-    if (window.freighterApi) {
-      return await window.freighterApi.getPublicKey();
-    }
-    if (window.freighter) {
-      return await window.freighter.getPublicKey();
-    }
-    throw new Error("Freighter API not accessible");
+    console.log("📞 Connecting to Albedo wallet...");
+    const result = await albedo.publicKey({
+      require_existing: false,
+    });
+    console.log("✅ Albedo connected! Public Key:", result.pubkey);
+    return result.pubkey;
   } catch (error) {
-    if (error.message?.includes("User declined")) {
-      throw new Error("Wallet connection was declined");
+    if (error.message?.includes("canceled")) {
+      throw new Error("Wallet connection was canceled");
     }
-    throw new Error("Failed to connect wallet: " + error.message);
+    throw new Error("Failed to connect Albedo wallet: " + error.message);
   }
 }
 
+/**
+ * Disconnect wallet (just clears local state)
+ */
+export function disconnectWallet() {
+  console.log("🔌 Wallet disconnected");
+  // Albedo is stateless, nothing to do
+}
+
+/**
+ * Sign transaction with Albedo
+ * @param {string} xdr - Transaction XDR
+ * @param {string} networkPassphrase - Network passphrase
+ * @returns {Promise<string>} Signed transaction XDR
+ */
 export async function signTransaction(xdr, networkPassphrase) {
   if (DEV_MODE) {
     console.warn(
       "🔧 DEV MODE: Returning mock signed transaction (not real blockchain transaction)",
     );
-    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate signing delay
-    return xdr; // In mock mode, we just return the XDR as "signed"
-  }
-
-  if (!(await isFreighterInstalled())) {
-    throw new Error("Freighter wallet is not installed");
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return xdr; // In mock mode, return XDR as "signed"
   }
 
   try {
-    if (window.freighterApi) {
-      return await window.freighterApi.signTransaction(xdr, {
-        networkPassphrase: networkPassphrase,
-      });
-    }
-    if (window.freighter) {
-      return await window.freighter.signTransaction(xdr, {
-        network: networkPassphrase,
-      });
-    }
-    throw new Error("Freighter API not accessible");
+    console.log("📝 Requesting Albedo signature...");
+
+    // Determine network from passphrase
+    const network = networkPassphrase.includes("Test") ? "testnet" : "public";
+
+    const result = await albedo.tx({
+      xdr: xdr,
+      network: network,
+      submit: false, // We'll submit ourselves
+    });
+
+    console.log("✅ Transaction signed by Albedo");
+    return result.signed_envelope_xdr;
   } catch (error) {
-    if (error.message?.includes("User declined")) {
+    if (error.message?.includes("canceled")) {
       throw new Error("Transaction was declined");
     }
     throw new Error("Failed to sign transaction: " + error.message);
   }
 }
 
-export function disconnectWallet() {
-  return true;
+/**
+ * Check if wallet is available
+ * Albedo is always available (web-based)
+ */
+export async function isWalletAvailable() {
+  return true; // Albedo is always available
 }

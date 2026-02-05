@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { connectWallet, disconnectWallet, signTransaction } from './utils/wallet';
+import { signTransaction } from './utils/wallet'; // Only keeping signTransaction for tx signing
 import { 
   getBalance, 
   buildPaymentTransaction, 
@@ -40,6 +40,7 @@ import StreakBadge from './components/StreakBadge';
 import Milestones from './components/Milestones';
 import EmbedWidget from './components/EmbedWidget';
 import QRCode from './components/QRCode';
+import { WalletConnect } from './components/WalletConnect';
 import {
   ChevronUpIcon,
   ChevronDownIcon,
@@ -217,6 +218,8 @@ function App() {
     setToast({ show: false, message: '', type: 'info' });
   };
 
+  // OLD WALLET FUNCTIONS - Replaced by WalletConnect component
+  /*
   const handleConnect = async () => {
     setLoading(true);
     
@@ -239,6 +242,8 @@ function App() {
     setBalance(0);
     showToast('Wallet disconnected', 'info');
   };
+  */
+
 
   const sendTip = async (amount) => {
     if (!walletConnected) {
@@ -356,53 +361,36 @@ function App() {
       <nav className="top-nav">
         <div className="nav-content">
           <div className="nav-left">
-            <h3 className="logo">Stellar Tip Jar</h3>
+            <div className="brand-logo">
+              <img src="/favicon.png" alt="Icon" className="brand-icon-img" />
+              <h3 className="brand-text">
+                <span className="brand-primary">STELLAR</span>
+                <span className="brand-secondary">TIP JAR</span>
+              </h3>
+            </div>
           </div>
           <div className="nav-right">
             <ThemeToggle isDark={darkMode} onToggle={() => setDarkMode(!darkMode)} />
-            {!walletConnected ? (
-              <button 
-                className="btn-nav-wallet"
-                onClick={handleConnect}
-                disabled={loading}
-              >
-                {loading ? 'Connecting...' : 'Connect Wallet'}
-              </button>
-            ) : (
-              <div className="wallet-dropdown">
-                <button 
-                  className="btn-wallet-connected"
-                  onClick={() => setWalletDropdownOpen(!walletDropdownOpen)}
-                >
-                  <span className="wallet-icon"><WalletIcon size={14} /></span>
-                  <span className="wallet-short-address">{shortenAddress(publicKey)}</span>
-                  <span className="dropdown-arrow">{walletDropdownOpen ? <ChevronUpIcon size={12} /> : <ChevronDownIcon size={12} />}</span>
-                </button>
-                
-                {walletDropdownOpen && (
-                  <div className="wallet-dropdown-menu">
-                    <div className="dropdown-item wallet-info">
-                      <span className="info-label">Balance</span>
-                      <span className="info-value">{balance.toFixed(2)} XLM</span>
-                    </div>
-                    <div className="dropdown-item wallet-info">
-                      <span className="info-label">Address</span>
-                      <span className="info-value wallet-full-address">{publicKey}</span>
-                    </div>
-                    <div className="dropdown-divider"></div>
-                    <button 
-                      className="dropdown-item btn-dropdown-disconnect"
-                      onClick={() => {
-                        handleDisconnect();
-                        setWalletDropdownOpen(false);
-                      }}
-                    >
-                      <LogOutIcon size={16} /> Disconnect Wallet
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            
+            {/* WalletConnect Component in Navbar */}
+            <div style={{ marginLeft: '1rem' }}>
+              <WalletConnect 
+                compact={true}
+                balance={balance}
+                showToast={showToast}
+                onConnect={(pubKey) => {
+                  setPublicKey(pubKey);
+                  setWalletConnected(true);
+                  showToast('Wallet connected successfully!', 'success');
+                }}
+                onDisconnect={() => {
+                  setWalletConnected(false);
+                  setPublicKey('');
+                  setBalance(0);
+                  showToast('Wallet disconnected', 'info');
+                }}
+              />
+            </div>
           </div>
         </div>
       </nav>
@@ -448,7 +436,10 @@ function App() {
             </div>
           </div>
 
-          {/* CTA Section */}
+          {/* WalletConnect moved to navbar */}
+
+          {/* OLD CTA SECTION - Replaced by WalletConnect component above */}
+          {/*
           <div className="hero-cta-section">
             {!walletConnected ? (
               <div className="cta-wrapper">
@@ -472,6 +463,7 @@ function App() {
               </div>
             )}
           </div>
+          */}
         </div>
       </section>
 
