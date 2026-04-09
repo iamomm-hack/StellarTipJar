@@ -81,6 +81,20 @@ function Receipt({ transaction, onClose }) {
               </div>
             </div>
 
+            {transaction.contractHash && (
+              <div className="receipt-row">
+                <span className="receipt-label">Contract Tx Hash</span>
+                <code className="receipt-value">{transaction.contractHash}</code>
+              </div>
+            )}
+
+            {transaction.walletName && (
+              <div className="receipt-row">
+                <span className="receipt-label">Wallet</span>
+                <span className="receipt-value">{transaction.walletName}</span>
+              </div>
+            )}
+
             <div className="receipt-row">
               <span className="receipt-label">From</span>
               <code className="receipt-value">{transaction.sender}</code>
@@ -100,6 +114,13 @@ function Receipt({ transaction, onClose }) {
               <span className="receipt-label">Network</span>
               <span className="receipt-value">Stellar Testnet</span>
             </div>
+
+            {transaction.errorMessage && (
+              <div className="receipt-row">
+                <span className="receipt-label">Error</span>
+                <span className="receipt-value">{transaction.errorMessage}</span>
+              </div>
+            )}
           </div>
 
           {/* Actions */}

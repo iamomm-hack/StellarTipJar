@@ -34,6 +34,32 @@ function TransactionHistory({ transactions, onViewReceipt, onClearHistory }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const ITEMS_PER_PAGE = 10;
 
+  const getStatusDetails = (status) => {
+    const normalized = (status || 'success').toLowerCase();
+
+    if (normalized === 'pending') {
+      return {
+        label: 'pending',
+        className: 'status-pending',
+        icon: '⏳'
+      };
+    }
+
+    if (normalized === 'failed' || normalized === 'error') {
+      return {
+        label: 'failed',
+        className: 'status-failed',
+        icon: '✕'
+      };
+    }
+
+    return {
+      label: 'success',
+      className: 'status-completed',
+      icon: <CheckIcon size={12} />
+    };
+  };
+
   const formatDate = (isoString) => {
     const date = new Date(isoString);
     const now = new Date();
@@ -173,27 +199,43 @@ function TransactionHistory({ transactions, onViewReceipt, onClearHistory }) {
               {/* Transactions List */}
               <div className="transactions-list">
                 {paginatedData.data.map((tx) => (
-                  <div key={tx.id} className="transaction-item" onClick={() => onViewReceipt(tx)}>
-                    <div className="transaction-info">
-                      <div className="transaction-main">
-                        <span className="transaction-amount">{parseFloat(tx.amount).toFixed(2)} XLM</span>
-                        <span className="transaction-status-badge status-completed">
-                          <CheckIcon size={12} /> success
-                        </span>
+                  (() => {
+                    const statusDetails = getStatusDetails(tx.status);
+
+                    return (
+                      <div key={tx.id} className="transaction-item" onClick={() => onViewReceipt(tx)}>
+                        <div className="transaction-info">
+                          <div className="transaction-main">
+                            <span className="transaction-amount">{parseFloat(tx.amount).toFixed(2)} XLM</span>
+                            <span className={`transaction-status-badge ${statusDetails.className}`}>
+                              {typeof statusDetails.icon === 'string' ? statusDetails.icon : statusDetails.icon} {statusDetails.label}
+                            </span>
+                          </div>
+                          <div className="transaction-details">
+                            <span className="transaction-hash">
+                              Payment: {tx.hash ? shortenAddress(tx.hash) : 'pending'}
+                            </span>
+                            {tx.contractHash && (
+                              <span className="transaction-hash">
+                                Contract: {shortenAddress(tx.contractHash)}
+                              </span>
+                            )}
+                            {(tx.sender || tx.from) && (
+                              <span className="transaction-from">
+                                From: {shortenAddress(tx.sender || tx.from)}
+                              </span>
+                            )}
+                            {tx.errorMessage && (
+                              <span className="transaction-from" title={tx.errorMessage}>
+                                Error: {tx.errorMessage.length > 36 ? `${tx.errorMessage.slice(0, 36)}...` : tx.errorMessage}
+                              </span>
+                            )}
+                            <span className="transaction-date">{formatDate(tx.timestamp)}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="transaction-details">
-                        <span className="transaction-hash">
-                          Hash: {shortenAddress(tx.hash)}
-                        </span>
-                        {tx.from && (
-                          <span className="transaction-from">
-                            From: {shortenAddress(tx.from)}
-                          </span>
-                        )}
-                        <span className="transaction-date">{formatDate(tx.timestamp)}</span>
-                      </div>
-                    </div>
-                  </div>
+                    );
+                  })()
                 ))}
               </div>
 
