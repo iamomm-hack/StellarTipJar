@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { signTransaction } from './utils/wallet'; // Only keeping signTransaction for tx signing
+import { useState, useEffect, useRef } from 'react';
+import { signTransaction, WalletErrorType } from './utils/wallet';
 import { 
   getBalance, 
   buildPaymentTransaction, 
@@ -11,10 +11,18 @@ import {
 } from './utils/stellar';
 import { 
   saveTransaction, 
+  updateTransaction,
   getTransactions, 
   clearTransactions,
   getTotalTipsReceived
 } from './utils/storage';
+import {
+  isContractConfigured,
+  getContractConfig,
+  readTotalTipsFromContract,
+  recordTipOnContract,
+  startContractEventStream,
+} from './utils/contract';
 import { 
   getXLMPrice, 
   convertUSDtoXLM, 
@@ -90,6 +98,30 @@ function App() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [walletDropdownOpen, setWalletDropdownOpen] = useState(false);
+  const [walletMeta, setWalletMeta] = useState({ walletId: '', walletName: '' });
+  const [copied, setCopied] = useState(false);
+
+  const [txStatus, setTxStatus] = useState({
+    stage: 'idle',
+    message: '',
+    type: 'info',
+  });
+
+  const [contractState, setContractState] = useState(() => {
+    const config = getContractConfig();
+    return {
+      configured: isContractConfigured(),
+      contractId: config.contractId,
+      totalTipsOnChain: null,
+      totalTipsStroops: '0',
+      syncedAt: null,
+      eventCursor: undefined,
+      events: [],
+    };
+  });
+
+  const contractCursorRef = useRef(undefined);
+  const stopContractEventStreamRef = useRef(null);
   
   // Toast state
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -119,8 +151,12 @@ function App() {
   const [showEmbedWidget, setShowEmbedWidget] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   
-  const totalTips = transactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-  const tipCount = transactions.length;
+  const successfulTransactions = transactions.filter((tx) => tx.status === 'success');
+  const totalTips = successfulTransactions.reduce(
+    (sum, tx) => sum + parseFloat(tx.amount || 0),
+    0,
+  );
+  const tipCount = successfulTransactions.length;
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -210,6 +246,82 @@ function App() {
     }
   };
 
+  const setTransactionProgress = (stage, message, type = 'info') => {
+    setTxStatus({ stage, message, type });
+  };
+
+  const mergeTransactionUpdate = (txId, updates) => {
+    if (!txId) return;
+
+    const updated = updateTransaction(txId, updates);
+    if (!updated) return;
+
+    setTransactions((prev) =>
+      prev.map((tx) => (tx.id === txId ? { ...tx, ...updated } : tx)),
+    );
+  };
+
+  const syncContractSnapshot = async (readerPublicKey = publicKey) => {
+    if (!contractState.configured || !readerPublicKey) return;
+
+    try {
+      const contractTotals = await readTotalTipsFromContract(readerPublicKey);
+
+      setContractState((prev) => ({
+        ...prev,
+        totalTipsOnChain: contractTotals.totalTipsXlm,
+        totalTipsStroops: contractTotals.totalTipsStroops,
+        syncedAt: new Date().toISOString(),
+      }));
+    } catch (error) {
+      console.warn('Contract snapshot sync failed:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!walletConnected || !publicKey || !contractState.configured) {
+      return;
+    }
+
+    syncContractSnapshot(publicKey);
+  }, [walletConnected, publicKey, contractState.configured]);
+
+  useEffect(() => {
+    if (!walletConnected || !publicKey || !contractState.configured) {
+      if (stopContractEventStreamRef.current) {
+        stopContractEventStreamRef.current();
+        stopContractEventStreamRef.current = null;
+      }
+      return;
+    }
+
+    stopContractEventStreamRef.current = startContractEventStream({
+      initialCursor: contractCursorRef.current,
+      onEvents: (payload) => {
+        contractCursorRef.current = payload.cursor;
+
+        setContractState((prev) => ({
+          ...prev,
+          eventCursor: payload.cursor,
+          syncedAt: new Date().toISOString(),
+          events: [...payload.events.reverse(), ...prev.events].slice(0, 20),
+        }));
+
+        syncContractSnapshot(publicKey);
+      },
+      onError: (error) => {
+        console.warn('Contract event stream error:', error);
+      },
+    });
+
+    return () => {
+      if (stopContractEventStreamRef.current) {
+        stopContractEventStreamRef.current();
+        stopContractEventStreamRef.current = null;
+      }
+    };
+  }, [walletConnected, publicKey, contractState.configured]);
+
   const showToast = (message, type = 'info') => {
     setToast({ show: true, message, type });
   };
@@ -258,48 +370,124 @@ function App() {
       return;
     }
 
-    setLoading(true);
+    const numericAmount = Number(amount);
+    if (numericAmount > balance) {
+      const message = 'Insufficient balance. Please fund wallet or lower the amount.';
+      setTransactionProgress('failed', message, 'error');
+      showToast(message, 'error');
+      return;
+    }
 
-    console.log('Starting tip transaction...', { amount, recipient: CREATOR_ADDRESS, sender: publicKey });
+    setLoading(true);
+    setTransactionProgress('pending', 'Preparing payment transaction...', 'info');
+
+    const pendingTx = saveTransaction({
+      hash: '',
+      amount: numericAmount,
+      recipient: CREATOR_ADDRESS,
+      sender: publicKey,
+      from: publicKey,
+      status: 'pending',
+      walletName: walletMeta.walletName || 'Unknown wallet',
+    });
+
+    if (pendingTx) {
+      setTransactions((prev) => [pendingTx, ...prev]);
+    }
+
+    console.log('Starting tip transaction...', { amount: numericAmount, recipient: CREATOR_ADDRESS, sender: publicKey });
 
     try {
       // Build transaction
       console.log('Building transaction...');
-      const xdr = await buildPaymentTransaction(publicKey, CREATOR_ADDRESS, amount);
+      const xdr = await buildPaymentTransaction(publicKey, CREATOR_ADDRESS, numericAmount);
       console.log('Transaction built XDR:', xdr ? 'Yes' : 'No');
+      setTransactionProgress('pending', 'Waiting for wallet signature...', 'info');
       
-      // Sign with Freighter
-      console.log('Requesting signature from Freighter...');
+      // Sign with selected wallet
+      console.log('Requesting wallet signature...');
       const signedXdr = await signTransaction(xdr, NETWORK_PASSPHRASE);
       console.log('Transaction signed:', signedXdr ? 'Yes' : 'No');
+      setTransactionProgress('pending', 'Submitting payment transaction...', 'info');
       
       // Submit transaction
       console.log('Submitting transaction...');
       
       // Submit transaction
       const hash = await submitTransaction(signedXdr);
-      
-      // Save transaction to history
-      const txData = {
+
+      if (pendingTx?.id) {
+        mergeTransactionUpdate(pendingTx.id, {
+          hash,
+          paymentHash: hash,
+          status: 'pending',
+        });
+      }
+
+      let contractHash = '';
+
+      if (contractState.configured) {
+        setTransactionProgress('pending', 'Calling smart contract on testnet...', 'info');
+
+        const contractResult = await recordTipOnContract({
+          senderPublicKey: publicKey,
+          amountXlm: numericAmount,
+        });
+
+        contractHash = contractResult.hash;
+        await syncContractSnapshot(publicKey);
+      }
+
+      const finalTransactionUpdates = {
         hash,
-        amount,
-        recipient: CREATOR_ADDRESS,
-        sender: publicKey,
-        status: 'success'
+        paymentHash: hash,
+        contractHash: contractHash || undefined,
+        amount: numericAmount,
+        status: 'success',
+        errorMessage: '',
       };
-      
-      const savedTx = saveTransaction(txData);
-      if (savedTx) {
-        setTransactions(prev => [savedTx, ...prev]);
+
+      let finalTx = null;
+
+      if (pendingTx?.id) {
+        mergeTransactionUpdate(pendingTx.id, finalTransactionUpdates);
+        finalTx = {
+          ...pendingTx,
+          ...finalTransactionUpdates,
+        };
+      } else {
+        finalTx = saveTransaction({
+          ...finalTransactionUpdates,
+          recipient: CREATOR_ADDRESS,
+          sender: publicKey,
+          from: publicKey,
+          walletName: walletMeta.walletName || 'Unknown wallet',
+        });
+
+        if (finalTx) {
+          setTransactions((prev) => [finalTx, ...prev]);
+        }
+      }
+
+      if (finalTx) {
         // Show Thank You modal with tip data
-        setLastTipData({ amount, hash, transaction: savedTx });
+        setLastTipData({ amount: numericAmount, hash, transaction: finalTx });
         setShowThankYou(true);
-        
-        // ✨ Trigger confetti and sound
+
+        // Trigger confetti and sound
         playSuccessSound();
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 3000);
       }
+
+      setTransactionProgress(
+        'success',
+        contractState.configured
+          ? 'Payment + contract update completed.'
+          : 'Payment completed. Contract is not configured yet.',
+        'success',
+      );
+      showToast('Tip transaction completed!', 'success');
       
       // Clear input fields
       setTipAmount('');
@@ -308,7 +496,25 @@ function App() {
       // Refresh balance
       setTimeout(fetchBalance, 2000);
     } catch (err) {
-      showToast(err.message, 'error');
+      let message = err?.message || 'Transaction failed';
+
+      if (err?.type === WalletErrorType.WALLET_NOT_FOUND) {
+        message = 'Wallet not found. Install a supported wallet and retry.';
+      } else if (err?.type === WalletErrorType.WALLET_REJECTED) {
+        message = 'Transaction was rejected in wallet.';
+      } else if (/insufficient/i.test(message)) {
+        message = 'Insufficient balance to complete this transaction.';
+      }
+
+      if (pendingTx?.id) {
+        mergeTransactionUpdate(pendingTx.id, {
+          status: 'failed',
+          errorMessage: message,
+        });
+      }
+
+      setTransactionProgress('failed', message, 'error');
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -378,15 +584,32 @@ function App() {
                 compact={true}
                 balance={balance}
                 showToast={showToast}
-                onConnect={(pubKey) => {
+                onConnect={(pubKey, wallet) => {
                   setPublicKey(pubKey);
+                  setWalletMeta({
+                    walletId: wallet?.walletId || '',
+                    walletName: wallet?.walletName || '',
+                  });
                   setWalletConnected(true);
-                  showToast('Wallet connected successfully!', 'success');
+                  setTransactionProgress('idle', '', 'info');
+
+                  if (contractState.configured) {
+                    syncContractSnapshot(pubKey);
+                  }
+
+                  showToast(
+                    wallet?.walletName
+                      ? `Wallet connected (${wallet.walletName})`
+                      : 'Wallet connected successfully!',
+                    'success',
+                  );
                 }}
                 onDisconnect={() => {
                   setWalletConnected(false);
                   setPublicKey('');
                   setBalance(0);
+                  setWalletMeta({ walletId: '', walletName: '' });
+                  setTxStatus({ stage: 'idle', message: '', type: 'info' });
                   showToast('Wallet disconnected', 'info');
                 }}
               />
@@ -506,7 +729,7 @@ function App() {
         <div className="tab-content tip-tab-content">
           {/* Streak Badge - Top Right */}
           <div className="streak-container">
-            <StreakBadge transactions={transactions} />
+            <StreakBadge transactions={successfulTransactions} />
           </div>
           
           {/* Tip Goals Progress - Full Width */}
@@ -531,6 +754,64 @@ function App() {
                 >
                   <QrCodeIcon size={18} /> QR Code
                 </button>
+              </div>
+
+              <div
+                style={{
+                  marginBottom: '1rem',
+                  padding: '0.75rem 1rem',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.02)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.75rem',
+                    flexWrap: 'wrap',
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  <span>
+                    Wallet: <strong>{walletMeta.walletName || 'Connected wallet'}</strong>
+                  </span>
+                  <span>
+                    Contract:{' '}
+                    <strong>
+                      {contractState.configured
+                        ? shortenAddress(contractState.contractId)
+                        : 'Not configured'}
+                    </strong>
+                  </span>
+                  <span>
+                    On-chain Total:{' '}
+                    <strong>
+                      {contractState.totalTipsOnChain !== null
+                        ? `${contractState.totalTipsOnChain.toFixed(2)} XLM`
+                        : '--'}
+                    </strong>
+                  </span>
+                </div>
+
+                {txStatus.stage !== 'idle' && txStatus.message && (
+                  <div
+                    style={{
+                      marginTop: '0.6rem',
+                      fontSize: '0.82rem',
+                      color:
+                        txStatus.type === 'error'
+                          ? '#dc2626'
+                          : txStatus.type === 'success'
+                            ? '#16a34a'
+                            : 'var(--color-text-muted)',
+                    }}
+                  >
+                    {txStatus.message}
+                  </div>
+                )}
               </div>
 
             <div className="tip-content">
@@ -638,9 +919,52 @@ function App() {
       {/* Analytics Dashboard Section */}
       {walletConnected && activeTab === 'analytics' && (
         <div className="tab-content">
-          <Analytics transactions={transactions} onExportPDF={() => generatePDFReport(transactions, { supporters: new Set(transactions.map(t => t.from)).size })} />
-          <Leaderboard transactions={transactions} />
+          <Analytics transactions={successfulTransactions} onExportPDF={() => generatePDFReport(successfulTransactions, { supporters: new Set(successfulTransactions.map(t => t.from)).size })} />
+          <Leaderboard transactions={successfulTransactions} />
           <Milestones totalTips={totalTips} tipCount={tipCount} />
+
+          {contractState.configured && (
+            <section className="tip-card" style={{ marginTop: '1.25rem' }}>
+              <h3 className="tip-title" style={{ marginBottom: '0.25rem' }}>Live Contract Events</h3>
+              <p className="tip-subtitle" style={{ marginBottom: '0.75rem' }}>
+                Real-time Soroban event sync
+                {contractState.syncedAt && (
+                  <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                    Last sync: {new Date(contractState.syncedAt).toLocaleTimeString()}
+                  </span>
+                )}
+              </p>
+
+              {contractState.events.length === 0 ? (
+                <p className="quick-tips-label">Waiting for contract events...</p>
+              ) : (
+                <div style={{ display: 'grid', gap: '0.5rem' }}>
+                  {contractState.events.slice(0, 5).map((event) => (
+                    <div
+                      key={event.id}
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '8px',
+                        padding: '0.6rem 0.75rem',
+                        fontSize: '0.82rem',
+                        background: 'rgba(0,0,0,0.02)',
+                      }}
+                    >
+                      <div style={{ fontWeight: '600' }}>
+                        Ledger #{event.ledger} · {event.type}
+                      </div>
+                      <div style={{ opacity: 0.85, marginTop: '0.25rem', wordBreak: 'break-word' }}>
+                        Topic: {JSON.stringify(event.topic)}
+                      </div>
+                      <div style={{ opacity: 0.85, marginTop: '0.25rem', wordBreak: 'break-word' }}>
+                        Value: {JSON.stringify(event.value)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
           
           {/* Embed Widget Button */}
           <div className="embed-section">
