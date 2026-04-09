@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@albedo-link/intent": "^0.13.0",
+    "@creit.tech/stellar-wallets-kit": "^2.1.0",
     "chart.js": "^4.5.1",
     "gsap": "^3.14.2",
     "qrcode.react": "^4.2.0",
