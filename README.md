@@ -2,6 +2,96 @@
 
 A feature-rich, interactive Stellar tipping application designed for content creators. Built with React and Stellar SDK, seamlessly bridging the gap between creators and their supporters.
 
+<div align="center">
+
+![Yellow Belt](https://img.shields.io/badge/YELLOW%20BELT-LEVEL%202-FFD54F?style=for-the-badge&labelColor=1B1F24&color=FFD54F)
+![Stellar](https://img.shields.io/badge/STELLAR-TESTNET-2F80ED?style=for-the-badge&labelColor=1B1F24)
+![Soroban](https://img.shields.io/badge/SOROBAN-CONTRACT-8B5CF6?style=for-the-badge&labelColor=1B1F24)
+![Wallets](https://img.shields.io/badge/WALLETS-3%20SUPPORTED-10B981?style=for-the-badge&labelColor=1B1F24)
+
+[Yellow Belt Features](#-yellow-belt) • [Requirement Mapping](#-yellow-belt-requirement-mapping) • [Getting Started](#-getting-started)
+
+</div>
+
+---
+
+## 🟡 Yellow Belt
+
+Ye section Yellow Belt Level 2 ke liye newly added code/features ka summary hai.
+
+### ✅ New Features Added
+
+- **Multi-wallet integration**: Freighter, Albedo, xBull support via StellarWalletsKit.
+- **Contract integration**: Frontend se Soroban smart contract invocation (`record_tip`) add kiya gaya.
+- **On-chain contract read**: Contract total tips read/sync support.
+- **Real-time event sync**: Contract events poll/stream karke analytics me live dikhaya ja raha hai.
+- **Transaction lifecycle tracking**: `pending -> success/failed` status flow implement.
+- **Status visibility in UI**: Transaction history badges + progress message panel.
+- **Improved receipt details**: Receipt me payment hash, contract hash, wallet name, error details.
+- **3 required error types handled**:
+	- Wallet not found
+	- Wallet rejected
+	- Insufficient balance
+
+### 🔁 Updated Send Tip Flow
+
+1. User wallet select/connect karta hai.
+2. Payment transaction build + sign + submit hota hai.
+3. Contract transaction build + sign + submit hota hai.
+4. Transaction status pending se success/failed me update hota hai.
+5. Contract event stream analytics data refresh karta hai.
+
+### 📦 New/Updated Files for Yellow Belt
+
+- `src/utils/wallet.js`: Multi-wallet abstraction + error normalization.
+- `src/utils/contract.js`: Soroban read/write + event stream utilities.
+- `src/utils/storage.js`: In-place transaction update helper (`updateTransaction`).
+- `src/utils/stellar.js`: Insufficient balance specific handling.
+- `src/App.jsx`: End-to-end orchestration for wallet + payment + contract + status + events.
+- `src/components/WalletConnect.jsx`: Wallet selector based connect UX.
+- `src/components/TransactionHistory.jsx`: Pending/success/failed transaction visualization.
+- `src/components/Receipt.jsx`: Contract hash/wallet/error details.
+- `contracts/tipjar/src/lib.rs`: Soroban contract source.
+- `contracts/tipjar/README.md`: Contract build/deploy instructions.
+- `.env.example`: Contract config template.
+- `WALLETCONNECT_USAGE.md`: Multi-wallet usage notes.
+
+### ⚙️ Env Setup for Contract
+
+Create `.env` and configure:
+
+```env
+VITE_TIP_CONTRACT_ID=YOUR_TESTNET_CONTRACT_ID
+VITE_TIP_CONTRACT_READ_METHOD=get_total_tips
+VITE_TIP_CONTRACT_WRITE_METHOD=record_tip
+VITE_TIP_READER_PUBLIC_KEY=YOUR_TESTNET_PUBLIC_KEY
+```
+
+### 🧪 Yellow Belt Requirement Mapping
+
+| Requirement | Implemented |
+| --- | --- |
+| 3 error types handled | Yes |
+| Contract deployed on testnet | Contract source + deploy guide added |
+| Contract called from frontend | Yes |
+| Transaction status visible | Yes |
+| Multi-wallet support | Yes |
+| Real-time event sync | Yes |
+
+### 📝 Submission Notes
+
+Final submission se pehle ye values fill/attach karo:
+
+- Deployed contract ID
+- Verified contract-call transaction hash
+- Wallet options screenshot
+
+Build check:
+
+```bash
+npm run build
+```
+
 ## ✨ Key Features
 
 ### 💸 Core Tipping
@@ -44,11 +134,11 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 | **Home Dashboard**<br>Instant tipping & Wallet status | ![Home UI](<img width="1919" height="878" alt="image" src="https://github.com/user-attachments/assets/11a05b31-1141-4fd3-92f4-d2b7d4c3e51b" />
 )            |
 | **Analytics Pivot**<br>Charts & Leaderboards          | ![Analytics](<img width="1919" height="911" alt="image" src="https://github.com/user-attachments/assets/cb63d2e7-4f47-462f-9de0-ca08a6252eeb" />
-      |
-      | ![Chart]<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/9a6b7eef-5db7-4d76-bd73-9c24db8803d6" />
+		|
+		| ![Chart]<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/9a6b7eef-5db7-4d76-bd73-9c24db8803d6" />
 
 
-      |
+		|
 | **Interactive Elements**<br>QR Code & Confetti        | ![Interactive](<img width="556" height="768" alt="image" src="https://github.com/user-attachments/assets/8fc0388f-dedf-4cc9-a9f4-d908007d93af" />
 
 ) |
@@ -66,24 +156,24 @@ A feature-rich, interactive Stellar tipping application designed for content cre
 
 1. **Clone the repository** (or download source)
 
-   ```bash
-   cd stellar-tip-jar
-   ```
+	```bash
+	cd stellar-tip-jar
+	```
 
 2. **Install Dependencies**
 
-   ```bash
-   npm install
-   ```
+	```bash
+	npm install
+	```
 
 3. **Run Development Server**
 
-   ```bash
-   npm run dev
-   ```
+	```bash
+	npm run dev
+	```
 
 4. **Open Browser**
-   Visit `http://localhost:5173`
+	Visit `http://localhost:5173`
 
 ---
 
@@ -148,3 +238,6 @@ stellar-tip-jar/
 ## 📄 License
 
 Distributed under the MIT License. Built with ❤️ for the Stellar ecosystem.
+
+---
+
