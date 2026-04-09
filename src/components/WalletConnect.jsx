@@ -1,14 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
-import albedo from '@albedo-link/intent';
 import { shortenAddress, fundAccount } from '../utils/stellar';
+import {
+    connectWallet,
+    disconnectWallet,
+    getAvailableWallets,
+    WalletErrorType,
+} from '../utils/wallet';
 import { QRCodeCanvas } from 'qrcode.react';
 import { WalletIcon } from './Icons';
 import './WalletConnect.css';
 
 /**
- * WalletConnect Component - Albedo Wallet
- * Web-based wallet - works perfectly on localhost!
+ * WalletConnect Component - Multi-wallet using StellarWalletsKit
  * 
  * Props:
  * - onConnect(publicKey): Called when wallet connects
@@ -16,14 +20,10 @@ import './WalletConnect.css';
  * - compact: If true, shows compact navbar button instead of full card
  * - balance: XLM balance to display in dropdown (compact mode only)
  */
-
-// Set global flag for network detection
-if (typeof window !== 'undefined') {
-    window.WALLET_TYPE = 'albedo';
-}
-
 export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balance = 0, showToast }) => {
     const [publicKey, setPublicKey] = useState(null);
+    const [walletName, setWalletName] = useState('');
+    const [availableWallets, setAvailableWallets] = useState([]);
     const [isConnecting, setIsConnecting] = useState(false);
     const [isFunding, setIsFunding] = useState(false);
     const [error, setError] = useState(null);
@@ -34,8 +34,29 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
     const connectBtnRef = useRef(null);
     const qrModalRef = useRef(null);
 
-    // Network is always TESTNET for Albedo
+    // Network is always TESTNET for wallet operations in this app
     const network = 'TESTNET';
+
+    useEffect(() => {
+        let mounted = true;
+
+        const loadWallets = async () => {
+            try {
+                const wallets = await getAvailableWallets();
+                if (mounted) {
+                    setAvailableWallets(wallets);
+                }
+            } catch (err) {
+                console.warn('Failed to load wallet list:', err);
+            }
+        };
+
+        loadWallets();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const handleFundAccount = async () => {
         if (!publicKey || isFunding) return;
@@ -121,25 +142,26 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
     }, [showQR]);
 
     const handleConnect = async () => {
-        console.log('🔌 Albedo Connect button clicked');
+        console.log('🔌 Multi-wallet connect button clicked');
         
         setIsConnecting(true);
         setError(null);
         
         try {
-            console.log('📞 Calling Albedo publicKey()...');
-            
-            // Albedo connection - opens web popup
-            const result = await albedo.publicKey({
-                require_existing: false
-            });
-            
-            console.log('✅ Albedo connected! Public Key:', result.pubkey);
-            setPublicKey(result.pubkey);
+            console.log('📞 Opening StellarWalletsKit auth modal...');
+
+            const result = await connectWallet();
+
+            console.log('✅ Wallet connected!', result.walletName, result.address);
+            setPublicKey(result.address);
+            setWalletName(result.walletName || 'Wallet');
             
             // Notify parent component
             if (onConnect) {
-                onConnect(result.pubkey);
+                onConnect(result.address, {
+                    walletId: result.walletId,
+                    walletName: result.walletName,
+                });
             }
             
             // Success animation
@@ -151,12 +173,20 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
                 );
             }
         } catch (err) {
-            console.error('❌ Albedo connection error:', err);
-            
-            if (err.message?.includes('canceled')) {
-                setError('Connection was canceled');
-            } else {
-                setError(err.message || 'Failed to connect Albedo wallet');
+            console.error('❌ Wallet connection error:', err);
+
+            let message = err.message || 'Failed to connect wallet';
+
+            if (err.type === WalletErrorType.WALLET_NOT_FOUND) {
+                message = 'Wallet not found. Install Freighter or choose Albedo/xBull.';
+            } else if (err.type === WalletErrorType.WALLET_REJECTED) {
+                message = 'Wallet connection request was rejected.';
+            }
+
+            setError(message);
+
+            if (showToast) {
+                showToast(message, 'error');
             }
             
             // Error shake animation
@@ -172,9 +202,11 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
         }
     };
 
-    const handleDisconnect = () => {
-        console.log('🔌 Disconnecting Albedo wallet...');
+    const handleDisconnect = async () => {
+        console.log('🔌 Disconnecting wallet...');
+        await disconnectWallet();
         setPublicKey(null);
+        setWalletName('');
         setError(null);
         
         // Notify parent component
@@ -268,6 +300,15 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
+                            <div style={{ marginBottom: '0.75rem' }}>
+                                <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>
+                                    Wallet
+                                </div>
+                                <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#333' }}>
+                                    {walletName || 'Connected wallet'}
+                                </div>
+                            </div>
+
                             <div style={{ marginBottom: '0.75rem' }}>
                                 <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>
                                     Balance
@@ -379,7 +420,7 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
                     transition: 'all 0.2s ease'
                 }}
             >
-                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                {isConnecting ? 'Connecting...' : 'Connect Wallets'}
             </button>
         );
     }
@@ -394,6 +435,9 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
                     <span className={`network-badge ${network.toLowerCase()}`}>{network}</span>
                 </div>
                 <div className="wallet-info">
+                    <p className="wallet-description" style={{ marginBottom: '0.75rem' }}>
+                        Connected via {walletName || 'wallet'}
+                    </p>
                     <div className="address-row">
                         <p className="public-key" title={publicKey}>
                             {shortenAddress(publicKey)}
@@ -448,7 +492,7 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
                 <h3>Connect Wallet</h3>
             </div>
             <p className="wallet-description">
-                Connect your Albedo wallet to start sending XLM on {network.toLowerCase()}.
+                Connect with Freighter, Albedo, or xBull to send XLM and call contracts on {network.toLowerCase()}.
             </p>
             {error && <p className="error-message">{error}</p>}
             <button
@@ -457,7 +501,7 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
                 onClick={handleConnect}
                 disabled={isConnecting}
             >
-                {isConnecting ? 'Opening Albedo...' : 'Connect Albedo'}
+                {isConnecting ? 'Opening wallet selector...' : 'Choose Wallet'}
             </button>
             
             {/* Info */}
@@ -470,7 +514,11 @@ export const WalletConnect = ({ onConnect, onDisconnect, compact = false, balanc
                 background: 'rgba(0,0,0,0.02)',
                 borderRadius: '8px'
             }}>
-                <strong>Albedo</strong> - Web-based wallet, works on all browsers!
+                <strong>Available wallets:</strong>{' '}
+                {(availableWallets.length > 0
+                    ? availableWallets.map((wallet) => wallet.name)
+                    : ['Freighter', 'Albedo', 'xBull']
+                ).join(' • ')}
             </div>
         </div>
     );
