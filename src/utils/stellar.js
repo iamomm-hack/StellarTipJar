@@ -104,6 +104,16 @@ export async function submitTransaction(signedXdr) {
     if (error.response && error.response.data) {
       const extras = error.response.data.extras;
       if (extras && extras.result_codes) {
+        const txCode = extras.result_codes.transaction || "";
+        const opCodes = extras.result_codes.operations || [];
+        const hasInsufficientBalanceError =
+          txCode.includes("insufficient") ||
+          opCodes.some((code) => code.includes("underfunded") || code.includes("insufficient"));
+
+        if (hasInsufficientBalanceError) {
+          throw new Error("Insufficient balance to send this tip");
+        }
+
         throw new Error(
           "Transaction failed: " + JSON.stringify(extras.result_codes),
         );

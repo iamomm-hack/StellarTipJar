@@ -15,8 +15,8 @@ export const saveTransaction = (txData) => {
     const transactions = getTransactions();
     const newTransaction = {
       ...txData,
-      timestamp: new Date().toISOString(),
-      id: Date.now() + Math.random(), // Unique ID
+      timestamp: txData.timestamp || new Date().toISOString(),
+      id: txData.id || Date.now() + Math.random(), // Unique ID
     };
 
     transactions.unshift(newTransaction); // Add to beginning (newest first)
@@ -28,6 +28,35 @@ export const saveTransaction = (txData) => {
     return newTransaction;
   } catch (error) {
     console.error("Error saving transaction:", error);
+    return null;
+  }
+};
+
+/**
+ * Update an existing transaction by id
+ * @param {string|number} id - Transaction id
+ * @param {Object} updates - Partial transaction payload
+ * @returns {Object|null} Updated transaction or null if not found
+ */
+export const updateTransaction = (id, updates) => {
+  try {
+    const transactions = getTransactions();
+    const index = transactions.findIndex((tx) => tx.id === id);
+
+    if (index === -1) return null;
+
+    const updated = {
+      ...transactions[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    transactions[index] = updated;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+
+    return updated;
+  } catch (error) {
+    console.error("Error updating transaction:", error);
     return null;
   }
 };
